@@ -42,9 +42,9 @@ namespace UnityEditor.Rendering.MaterialVariants
         {
             string parentPath = AssetDatabase.GUIDToAssetPath(m_ParentGUID);
 
-            // If parent is deleted, just return null
-            if (parentPath == null)
-                return null;
+            // If parent is deleted, return the shader
+            if (string.IsNullOrEmpty(parentPath))
+                return material?.shader;
 
             Object parentAsset = AssetDatabase.LoadAssetAtPath<Object>(parentPath);
 
@@ -384,7 +384,7 @@ namespace UnityEditor.Rendering.MaterialVariants
             string rootPath = AssetDatabase.GUIDToAssetPath(rootGUID);
 
             // If rootPath is empty it mean that the parent have been deleted. In this case return null
-            if (rootPath == "")
+            if (string.IsNullOrEmpty(rootPath))
                 return null;
 
             ctx.DependsOnSourceAsset(rootGUID);

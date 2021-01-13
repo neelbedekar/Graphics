@@ -8,14 +8,12 @@ namespace UnityEditor.Rendering.MaterialVariants
     {
         public static class Styles
         {
-            public static readonly GUIContent parentVariantType = EditorGUIUtility.TrTextContent("Type", "");
             public const string materialVariantHierarchyText = "Material Variant Hierarchy";
-        }
 
-        private enum ParentVariantType
-        {
-            Material = 0,
-            Shader = 1
+            static public readonly GUIContent currentLabel = EditorGUIUtility.TrTextContent("Current", "The currently selected material.");
+            static public readonly GUIContent parentLabel = EditorGUIUtility.TrTextContent("Parent", "A parent can be either a material or a shader.");
+            static public readonly GUIContent rootLabel = EditorGUIUtility.TrTextContent("Root", "The root of the hierarchy.");
+            static public readonly GUIContent emptyLabel = EditorGUIUtility.TrTextContent(" ", "");
         }
 
         Material m_Material;
@@ -24,8 +22,6 @@ namespace UnityEditor.Rendering.MaterialVariants
         string m_ParentGUID = "";
         Object m_Parent; // This can be Material, Shader or MaterialVariant
         Object m_ParentTarget; // This is the target object Material or Shader
-
-        ParentVariantType m_ParentVariantType = ParentVariantType.Material;
 
         public HierarchyUI(Object materialEditorTarget)
         {
@@ -41,9 +37,6 @@ namespace UnityEditor.Rendering.MaterialVariants
 
                 m_Parent = m_MatVariant.GetParent();
                 m_ParentTarget = AssetDatabase.LoadAssetAtPath<Object>(AssetDatabase.GetAssetPath(m_Parent));
-
-                if (m_ParentTarget != null)
-                    m_ParentVariantType = m_ParentTarget is Shader ? ParentVariantType.Shader : ParentVariantType.Material;
             }
 
             GUILayout.BeginVertical();
@@ -52,19 +45,20 @@ namespace UnityEditor.Rendering.MaterialVariants
             using (new EditorGUI.DisabledScope(true))
             {
                 Material currentMaterial = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GetAssetPath(m_MatVariant));
-                DrawLineageMember("Current", currentMaterial, false);
+                DrawLineageMember(Styles.currentLabel, currentMaterial);
             }
 
             // Display the rest of the hierarchy
             Object selectedParentTarget = null;
             if (m_Parent == null)
             {
-                selectedParentTarget = DrawLineageMember("Parent", null, true);
+                selectedParentTarget = DrawLineageMember(Styles.parentLabel, null);
             }
             else
             {
                 bool isFirstAncestor = true;
                 Object nextParent = m_Parent;
+                GUIContent variantLabel = Styles.parentLabel, shaderLabel = Styles.parentLabel;
                 while (nextParent)
                 {
                     using (new EditorGUI.DisabledScope(!isFirstAncestor))
@@ -73,25 +67,26 @@ namespace UnityEditor.Rendering.MaterialVariants
 
                         if (nextParent is MaterialVariant nextMatVariant)
                         {
-                            Material mat = AssetDatabase.LoadAssetAtPath<Material>(AssetDatabase.GetAssetPath(nextParent));
-                            parentTargetForCurrentAncestor = DrawLineageMember("Parent", mat, isFirstAncestor);
+                            parentTargetForCurrentAncestor = DrawLineageMember(variantLabel, nextMatVariant.material);
                             nextParent = nextMatVariant.GetParent();
                         }
                         else if (nextParent is Material nextMaterial)
                         {
-                            parentTargetForCurrentAncestor = DrawLineageMember("Parent", nextParent, isFirstAncestor);
+                            parentTargetForCurrentAncestor = DrawLineageMember(Styles.parentLabel, nextParent);
                             nextParent = nextMaterial.shader;
                         }
                         else if (nextParent is Shader)
                         {
-                            parentTargetForCurrentAncestor = DrawLineageMember(isFirstAncestor ? "Parent" : "Root", nextParent, isFirstAncestor);
+                            parentTargetForCurrentAncestor = DrawLineageMember(shaderLabel, nextParent);
                             nextParent = null;
                         }
 
                         if (isFirstAncestor)
                         {
-                            selectedParentTarget = parentTargetForCurrentAncestor;
                             isFirstAncestor = false;
+                            selectedParentTarget = parentTargetForCurrentAncestor;
+                            variantLabel = Styles.emptyLabel;
+                            shaderLabel = Styles.rootLabel;
                         }
                     }
                 }
@@ -103,18 +98,21 @@ namespace UnityEditor.Rendering.MaterialVariants
             if (selectedParentTarget != m_ParentTarget)
             {
                 // Validate selectedParentTarget: to avoid a loop, it must not be the current material or have the current material as one of its ancestors
-                bool valid = true;
-                Object nextParent = MaterialVariant.GetMaterialVariantFromObject(selectedParentTarget);
-                while (nextParent != null)
+                bool valid = (selectedParentTarget is Material || selectedParentTarget is Shader);
+                if (valid)
                 {
-                    if (nextParent == m_MatVariant)
+                    Object nextParent = MaterialVariant.GetMaterialVariantFromObject(selectedParentTarget);
+                    while (nextParent != null)
                     {
-                        valid = false;
-                        break;
-                    }
+                        if (nextParent == m_MatVariant)
+                        {
+                            valid = false;
+                            break;
+                        }
 
-                    MaterialVariant nextMatVariant = nextParent as MaterialVariant;
-                    nextParent = nextMatVariant ? nextMatVariant.GetParent() : null;
+                        MaterialVariant nextMatVariant = nextParent as MaterialVariant;
+                        nextParent = nextMatVariant ? nextMatVariant.GetParent() : null;
+                    }
                 }
 
                 if (valid)
@@ -131,35 +129,10 @@ namespace UnityEditor.Rendering.MaterialVariants
             }
         }
 
-        Object DrawLineageMember(string label, Object asset, bool showButton)
+        Object DrawLineageMember(GUIContent label, Object asset)
         {
-            Object target;
-
-            if (showButton)
-            {
-                EditorGUILayout.BeginHorizontal();
-
-                Type type = m_ParentVariantType == ParentVariantType.Shader ? typeof(Shader) : typeof(Material);
-                target = EditorGUILayout.ObjectField(label, asset, type, false);
-
-                var oldWidth = EditorGUIUtility.labelWidth;
-                EditorGUIUtility.labelWidth = 45;
-                EditorGUI.BeginChangeCheck();
-                m_ParentVariantType = (ParentVariantType)EditorGUILayout.EnumPopup(HierarchyUI.Styles.parentVariantType, m_ParentVariantType);
-                if (EditorGUI.EndChangeCheck())
-                    target = null;
-                EditorGUIUtility.labelWidth = oldWidth;
-
-                EditorGUILayout.EndHorizontal();
-            }
-            else
-            {
-                Type type = asset is Shader ? typeof(Shader) : typeof(Material);
-                target = EditorGUILayout.ObjectField(label, asset, type, false);
-            }
-
             // We could use this to start a Horizontal and add inline icons and toggles to show overridden/locked
-            return target;
+            return EditorGUILayout.ObjectField(label, asset, typeof(Object), false);
         }
     }
 }
