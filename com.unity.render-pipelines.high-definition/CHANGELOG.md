@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Added pivot point manipulation for Decals (inspector and edit mode).
 - Added UV manipulation for Decals (edit mode).
 - Added color and intensity customization for Decals.
+- Added a complete solution for volumetric clouds for HDRP including a cloud map generation tool.
 
 ### Fixed
 - Fixed GC allocations from XR occlusion mesh when using multipass.
