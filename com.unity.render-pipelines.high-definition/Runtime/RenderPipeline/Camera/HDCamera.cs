@@ -130,6 +130,10 @@ namespace UnityEngine.Rendering.HighDefinition
             resetPostProcessingHistory = true;
             volumetricHistoryIsValid = false;
             colorPyramidHistoryIsValid = false;
+
+            // Reset the volumetric cloud offset animation data
+            volumetricCloudsAnimationData.lastTime = -1.0f;
+            volumetricCloudsAnimationData.cloudOffset = new Vector2(0.0f, 0.0f);
         }
 
         /// <summary>
@@ -196,6 +200,15 @@ namespace UnityEngine.Rendering.HighDefinition
             public bool rayTraced;
         }
 
+        /// <summary>
+        // Struct that lists the data required to perform the volumetric clouds animation
+        /// </summary>
+        internal struct VolumetricCloudsAnimationData
+        {
+            public float lastTime;
+            public Vector2 cloudOffset;
+        }
+
         internal Vector4[]              frustumPlaneEquations;
         internal int                    taaFrameIndex;
         internal float                  taaSharpenStrength;
@@ -225,6 +238,9 @@ namespace UnityEngine.Rendering.HighDefinition
         internal ShadowHistoryUsage[]   shadowHistoryUsage = null;
         // This property allows us to track for the various history accumulation based effects, the last registered validity frame ubdex of each effect as well as the resolution at which it was built.
         internal HistoryEffectValidity[] historyEffectUsage = null;
+
+        // This property allows us to track the volumetric cloud animation data
+        internal VolumetricCloudsAnimationData volumetricCloudsAnimationData;
 
         internal SkyUpdateContext       m_LightingOverrideSky = new SkyUpdateContext();
 
