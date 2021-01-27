@@ -5,7 +5,7 @@ namespace UnityEditor.Rendering.HighDefinition.ShaderGraph
 {
     static class CreateHairShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/HDRP/Hair Shader Graph", false, 319)]
+        [MenuItem("Assets/Create/Shader Graph/HDRP/Hair Shader Graph", false, 4019)]
         public static void CreateHairGraph()
         {
             var target = (HDTarget)Activator.CreateInstance(typeof(HDTarget));

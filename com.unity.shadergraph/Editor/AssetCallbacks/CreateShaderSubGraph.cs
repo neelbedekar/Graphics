@@ -5,7 +5,7 @@ namespace UnityEditor.ShaderGraph
 {
     class CreateShaderSubGraph : EndNameEditAction
     {
-        [MenuItem("Assets/Create/Shader Graph/Sub Graph", false, 309)]
+        [MenuItem("Assets/Create/Shader Graph/Sub Graph", false, 1309)]
         public static void CreateMaterialSubGraph()
         {
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, CreateInstance<CreateShaderSubGraph>(),

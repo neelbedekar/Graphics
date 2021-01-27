@@ -5,7 +5,7 @@ namespace UnityEditor.Rendering.HighDefinition.ShaderGraph
 {
     static class CreateEyeShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/HDRP/Eye Shader Graph", false, 320)]
+        [MenuItem("Assets/Create/Shader Graph/HDRP/Eye Shader Graph", false, 4018)]
         public static void CreateEyeGraph()
         {
             var target = (HDTarget)Activator.CreateInstance(typeof(HDTarget));
