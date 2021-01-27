@@ -3,7 +3,7 @@ using UnityEditor.ShaderGraph;
 
 namespace UnityEditor.Rendering.HighDefinition.ShaderGraph
 {
-    static class CreateDecalShaderGraph 
+    static class CreateDecalShaderGraph
     {
         [MenuItem("Assets/Create/Shader Graph/HDRP/Decal Shader Graph", false, 4016)]
         public static void CreateDecalGraph()

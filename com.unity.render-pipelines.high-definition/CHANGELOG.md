@@ -23,7 +23,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Change Asset/Create/Shader/HD Render Pipeline/Eye Shader Graph to Asset/Create/Shader Graph/HDRP/Eye Shader Graph
 - Change Asset/Create/Shader/HD Render Pipeline/Fabric Shader Graph to Asset/Create/Shader Graph/HDRP/Decal Fabric Shader Graph
 - Change Asset/Create/Shader/HD Render Pipeline/Eye Shader Graph to Asset/Create/Shader Graph/HDRP/Hair Shader Graph
-- Change Asset/Create/Shader/HD Render Pipeline/Lit Shader Graph to Asset/Create/Shader Graph/HDRP/Lit 
+- Change Asset/Create/Shader/HD Render Pipeline/Lit Shader Graph to Asset/Create/Shader Graph/HDRP/Lit
 - Change Asset/Create/Shader/HD Render Pipeline/StackLit Shader Graph to Asset/Create/Shader Graph/HDRP/StackLit Shader GraphShader Graph
 - Change Asset/Create/Shader/HD Render Pipeline/Unlit Shader Graph to Asset/Create/Shader Graph/HDRP/Unlit Shader Graph
 - Change Asset/Create/Shader/HD Render Pipeline/Custom FullScreen Pass to Asset/Create/Shader/HDRP/Custom FullScreen Pass
