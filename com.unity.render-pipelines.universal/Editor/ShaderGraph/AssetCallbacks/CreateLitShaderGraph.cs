@@ -5,7 +5,7 @@ namespace UnityEditor.Rendering.Universal.ShaderGraph
 {
     static class CreateLitShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/URP/Lit Shader Graph", false, 3112)]
+        [MenuItem("Assets/Create/Shader Graph/URP/Lit Shader Graph", false, 83)]
         public static void CreateLitGraph()
         {
             var target = (UniversalTarget)Activator.CreateInstance(typeof(UniversalTarget));

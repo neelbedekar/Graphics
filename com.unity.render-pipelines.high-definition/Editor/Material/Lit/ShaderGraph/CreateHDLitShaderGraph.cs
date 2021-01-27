@@ -5,7 +5,7 @@ namespace UnityEditor.Rendering.HighDefinition.ShaderGraph
 {
     static class CreateLitShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/HDRP/Lit Shader Graph", false, 4015)]
+        [MenuItem("Assets/Create/Shader Graph/HDRP/Lit Shader Graph", false, 81)]
         public static void CreateHDLitGraph()
         {
             var target = (HDTarget)Activator.CreateInstance(typeof(HDTarget));

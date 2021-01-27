@@ -5,7 +5,7 @@ namespace UnityEditor.Rendering.HighDefinition.ShaderGraph
 {
     static class CreateDecalShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/HDRP/Decal Shader Graph", false, 4016)]
+        [MenuItem("Assets/Create/Shader Graph/HDRP/Decal Shader Graph", false, 82)]
         public static void CreateDecalGraph()
         {
             var target = (HDTarget)Activator.CreateInstance(typeof(HDTarget));

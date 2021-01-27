@@ -5,7 +5,7 @@ namespace UnityEditor.Rendering.HighDefinition.ShaderGraph
 {
     static class CreateFabricShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/HDRP/Fabric Shader Graph", false, 4017)]
+        [MenuItem("Assets/Create/Shader Graph/HDRP/Fabric Shader Graph", false, 83)]
         public static void CreateFabricGraph()
         {
             var target = (HDTarget)Activator.CreateInstance(typeof(HDTarget));
