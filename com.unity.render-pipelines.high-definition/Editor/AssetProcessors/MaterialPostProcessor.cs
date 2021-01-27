@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEditor.ShaderGraph;
-using UnityEditor.Rendering.MaterialVariants;
 using UnityEngine.Rendering.HighDefinition;
 using UnityEditor.Rendering.HighDefinition.ShaderGraph;
 
 // Material property names
 using static UnityEngine.Rendering.HighDefinition.HDMaterialProperties;
-using UnityEditor.AssetImporters;
 
 namespace UnityEditor.Rendering.HighDefinition
 {
@@ -21,6 +19,31 @@ namespace UnityEditor.Rendering.HighDefinition
                 return;
 
             MaterialPostprocessor.s_CreatedAssets.Add(asset);
+        }
+
+        static string PrefabName = "Assets/Prefabs/Sphere.prefab";
+        static string VariantName = "Assets/Prefabs/Sphere Variant.prefab";
+
+
+        [MenuItem("TEMP/AddObjectToAsset", false)]
+        static void Test1()
+        {
+            var assetVersion = ScriptableObject.CreateInstance<AssetVersion>();
+            assetVersion.version = 47;
+            assetVersion.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector | HideFlags.NotEditable;
+            AssetDatabase.AddObjectToAsset(assetVersion, PrefabName);
+        }
+
+        [MenuItem("TEMP/LoadAllAssetsAtPath PREFAB", false)]
+        static void Test2()
+        {
+            var assetVersions = AssetDatabase.LoadAllAssetsAtPath(PrefabName);
+        }
+
+        [MenuItem("TEMP/LoadAllAssetsAtPath VARIANT", false)]
+        static void Test3()
+        {
+            var assetVersions = AssetDatabase.LoadAllAssetsAtPath(VariantName);
         }
     }
 
@@ -117,92 +140,75 @@ namespace UnityEditor.Rendering.HighDefinition
             s_NeedsSavingAssets = false;
         }
 
-        // TODO: remove this function when the C++ PR lands
-        void OnPreprocessAsset()
+        static void OnPostprocessAllAssets(string[] importedAssets, string[] deletedAssets, string[] movedAssets, string[] movedFromAssetPaths)
         {
-            if (context.assetPath.ToLowerInvariant().EndsWith(".mat"))
-                OnPreprocessMaterial();
-        }
-
-        void OnPreprocessMaterial()
-        {
-            Material material = null;
-            AssetVersion assetVersion = null;
-            MaterialVariant materialVariant = null;
-            var assets = AssetDatabase.LoadAllAssetsAtPath(context.assetPath);
-            foreach (var subAsset in assets)
+            foreach (var asset in importedAssets)
             {
-                if (subAsset is Material)
-                    material = subAsset as Material;
-                else if (subAsset is AssetVersion)
-                    assetVersion = subAsset as AssetVersion;
-                else if (subAsset is MaterialVariant)
-                    materialVariant = subAsset as MaterialVariant;
-            }
+                if (!asset.ToLowerInvariant().EndsWith(".mat"))
+                    continue;
 
-            if (!HDShaderUtils.IsHDRPShader(material.shader, upgradable: true))
-                return;
+                var assetVersions = AssetDatabase.LoadAllAssetsAtPath(asset);
+                var material = (Material)AssetDatabase.LoadAssetAtPath(asset, typeof(Material));
+                if (material == null)
+                    continue;
+                if (!HDShaderUtils.IsHDRPShader(material.shader, upgradable: true))
+                    continue;
 
-            UpgradeMaterial(material, assetVersion, context.assetPath);
-
-            if (materialVariant && materialVariant.Import(context, material))
-                HDShaderUtils.ResetMaterialKeywords(material);
-
-            if (material.shader.IsShaderGraph())
-            {
-                // Add dependency on shadergraph
-                var shaderPath = AssetDatabase.GetAssetPath(material.shader.GetInstanceID());
-                context.DependsOnSourceAsset(shaderPath);
-            }
-        }
-
-        static void UpgradeMaterial(Material material, AssetVersion assetVersion, string asset)
-        {
-            HDShaderUtils.ShaderID id = HDShaderUtils.GetShaderEnumFromShader(material.shader);
-            var latestVersion = k_Migrations.Length;
-            var wasUpgraded = false;
-
-            //subasset not found
-            if (!assetVersion)
-            {
-                wasUpgraded = true;
-                assetVersion = ScriptableObject.CreateInstance<AssetVersion>();
-                assetVersion.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector | HideFlags.NotEditable;
-                if (s_CreatedAssets.Contains(asset))
+                HDShaderUtils.ShaderID id = HDShaderUtils.GetShaderEnumFromShader(material.shader);
+                var latestVersion = k_Migrations.Length;
+                var wasUpgraded = false;
+                AssetVersion assetVersion = null;
+                foreach (var subAsset in assetVersions)
                 {
-                    //just created
-                    assetVersion.version = latestVersion;
-                    s_CreatedAssets.Remove(asset);
-
-                    //[TODO: remove comment once fixed]
-                    //due to FB 1175514, this not work. It is being fixed though.
-                    //delayed call of the following work in some case and cause infinite loop in other cases.
-                    AssetDatabase.AddObjectToAsset(assetVersion, asset);
-
-                    // Init material in case it's used before an inspector window is opened
-                    HDShaderUtils.ResetMaterialKeywords(material);
+                    if (subAsset != null && subAsset.GetType() == typeof(AssetVersion))
+                    {
+                        assetVersion = subAsset as AssetVersion;
+                        break;
+                    }
                 }
-                else
+
+                //subasset not found
+                if (!assetVersion)
                 {
-                    //asset exist prior migration
-                    assetVersion.version = 0;
-                    AssetDatabase.AddObjectToAsset(assetVersion, asset);
+                    wasUpgraded = true;
+                    assetVersion = ScriptableObject.CreateInstance<AssetVersion>();
+                    assetVersion.hideFlags = HideFlags.HideInHierarchy | HideFlags.HideInInspector | HideFlags.NotEditable;
+                    if (s_CreatedAssets.Contains(asset))
+                    {
+                        //just created
+                        assetVersion.version = latestVersion;
+                        s_CreatedAssets.Remove(asset);
+
+                        //[TODO: remove comment once fixed]
+                        //due to FB 1175514, this not work. It is being fixed though.
+                        //delayed call of the following work in some case and cause infinite loop in other cases.
+                        AssetDatabase.AddObjectToAsset(assetVersion, asset);
+
+                        // Init material in case it's used before an inspector window is opened
+                        HDShaderUtils.ResetMaterialKeywords(material);
+                    }
+                    else
+                    {
+                        //asset exist prior migration
+                        assetVersion.version = 0;
+                        AssetDatabase.AddObjectToAsset(assetVersion, asset);
+                    }
                 }
-            }
 
-            //upgrade
-            while (assetVersion.version < latestVersion)
-            {
-                k_Migrations[assetVersion.version](material, id);
-                assetVersion.version++;
-                wasUpgraded = true;
-            }
+                //upgrade
+                while (assetVersion.version < latestVersion)
+                {
+                    k_Migrations[assetVersion.version](material, id);
+                    assetVersion.version++;
+                    wasUpgraded = true;
+                }
 
-            if (wasUpgraded)
-            {
-                EditorUtility.SetDirty(assetVersion);
-                s_ImportedAssetThatNeedSaving.Add(asset);
-                s_NeedsSavingAssets = true;
+                if (wasUpgraded)
+                {
+                    EditorUtility.SetDirty(assetVersion);
+                    s_ImportedAssetThatNeedSaving.Add(asset);
+                    s_NeedsSavingAssets = true;
+                }
             }
         }
 

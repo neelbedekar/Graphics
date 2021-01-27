@@ -26,11 +26,12 @@ namespace UnityEditor.Rendering.MaterialVariants
         public HierarchyUI(Object materialEditorTarget)
         {
             m_Material = materialEditorTarget as Material;
-            m_MatVariant = MaterialVariant.GetMaterialVariantFromObject(materialEditorTarget);
+            //m_MatVariant = MaterialVariant.GetMaterialVariantFromObject(materialEditorTarget);
         }
 
         public void OnGUI()
         {
+            /*
             if (m_MatVariant.parentGUID != m_ParentGUID)
             {
                 m_ParentGUID = m_MatVariant.parentGUID;
@@ -127,6 +128,7 @@ namespace UnityEditor.Rendering.MaterialVariants
                         m_Material.shader = newShader;
                 }
             }
+            */
         }
 
         Object DrawLineageMember(GUIContent label, Object asset)

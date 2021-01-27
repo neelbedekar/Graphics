@@ -8,7 +8,6 @@ namespace UnityEditor.Rendering
     public abstract class SRPShaderGUI : ShaderGUI
     {
         protected MaterialVariant[] variants;
-        protected UnityEngine.Object[] targets;
 
         /// <summary>
         /// Unity calls this function when you assign a new shader to the material.
@@ -20,20 +19,22 @@ namespace UnityEditor.Rendering
         {
             base.AssignNewShaderToMaterial(material, oldShader, newShader);
 
+            /*
             var variant = MaterialVariant.GetMaterialVariantFromObject(material);
             if (variant)
                 variant.SetParent(newShader);
+            */
         }
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] props)
         {
-            variants = MaterialVariant.GetMaterialVariantsFor(materialEditor);
-            targets = materialEditor.targets;
+            //variants = MaterialVariant.GetMaterialVariantsFor(materialEditor);
         }
 
         public bool IsPropertyBlockedInAncestorsForAnyVariant(MaterialProperty property)
         {
-            return variants != null && variants.Any(o => o.IsPropertyBlockedInAncestors(property.name));
+            return false;
+            //return variants != null && variants.Any(o => o.IsPropertyBlockedInAncestors(property.name));
         }
 
         public MaterialPropertyScope CreateOverrideScopeFor(MaterialProperty property, bool forceMode = false)
@@ -43,12 +44,7 @@ namespace UnityEditor.Rendering
             => CreateOverrideScopeFor(properties, false);
 
         public MaterialPropertyScope CreateOverrideScopeFor(MaterialProperty[] properties, bool forceMode = false)
-        {
-            if (variants != null)
-                return new MaterialPropertyScope(properties, variants, forceMode);
-            else
-                return new MaterialPropertyScope(properties, targets);
-        }
+            => new MaterialPropertyScope(properties, variants, forceMode);
 
         public MaterialRenderQueueScope CreateRenderQueueOverrideScope(Func<int> valueGetter)
             => new MaterialRenderQueueScope(variants, valueGetter);

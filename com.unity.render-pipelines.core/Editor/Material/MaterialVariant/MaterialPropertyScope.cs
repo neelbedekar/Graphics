@@ -11,7 +11,6 @@ namespace UnityEditor.Rendering.MaterialVariants
     {
         MaterialProperty[] m_MaterialProperties;
         MaterialVariant[] m_Variants;
-        Object[] m_Materials;
         bool m_Force;
 
         DelayedOverrideRegisterer m_Registerer;
@@ -45,7 +44,6 @@ namespace UnityEditor.Rendering.MaterialVariants
 
             m_MaterialProperties = validProperties.ToArray();
             m_Variants = variants;
-            m_Materials = null;
             m_Force = force;
 
             m_Registerer = null;
@@ -55,14 +53,16 @@ namespace UnityEditor.Rendering.MaterialVariants
             // We define a new empty rect in order to grab the current height even if there was nothing drawn in the block (GetLastRect cause issue if it was first element of block)
             m_StartY = GUILayoutUtility.GetRect(0, 0).yMax;
 
-            if (m_Force)
+            if (m_Force || m_Variants == null)
                 return;
 
+            /*
             foreach (var materialProperty in m_MaterialProperties)
             {
                 var name = materialProperty.name;
                 m_IsBlocked |= m_Variants.Any(o => o.IsPropertyBlockedInAncestors(name));
             }
+            */
 
             if (m_IsBlocked)
                 EditorGUI.BeginDisabledGroup(true);
@@ -70,37 +70,13 @@ namespace UnityEditor.Rendering.MaterialVariants
                 EditorGUI.BeginChangeCheck();
         }
 
-        public MaterialPropertyScope(MaterialProperty[] materialProperties, Object[] materials)
-        {
-            m_MaterialProperties = materialProperties;
-            m_Variants = null;
-            m_Materials = materials;
-            m_Force = false;
-
-            m_Registerer = null;
-            m_IsBlocked = false;
-            m_StartY = 0;
-
-            EditorGUI.BeginChangeCheck();
-        }
-
         void IDisposable.Dispose()
         {
             insidePropertyScope = false;
             if (m_Variants == null)
-            {
-                if (EditorGUI.EndChangeCheck())
-                {
-                    foreach (var material in m_Materials)
-                    {
-                        var guid = AssetDatabase.AssetPathToGUID(AssetDatabase.GetAssetPath(material));
-                        MaterialVariant.RecordObjectsUndo(guid, m_MaterialProperties);
-                        MaterialVariant.UpdateHierarchy(guid, m_MaterialProperties);
-                    }
-                }
                 return;
-            }
 
+            /*
             // force registration is for MaterialProperty that are changed at inspector frame without change from the user
             if (!m_Force)
             {
@@ -128,17 +104,11 @@ namespace UnityEditor.Rendering.MaterialVariants
                     MaterialVariant[] matVariants = m_Variants;
                     MaterialProperty[] matProperties = m_MaterialProperties;
                     DrawContextMenuAndIcons(isOverride, m_IsBlocked, isLocked, r,
-                        () => {
-                            MaterialVariant.RecordObjectsUndo(matVariants, matProperties);
-                            foreach (var variant in matVariants)
-                            {
-                                variant.ResetOverrides(matProperties);
-                                MaterialVariant.UpdateHierarchy(variant.GUID, matProperties);
-                            }
-                        },
+                        () => Array.ForEach(matVariants, variant => variant.ResetOverrides(matProperties)),
                         () => Array.ForEach(matVariants, variant => variant.TogglePropertiesBlocked(matProperties)));
                 }
             }
+            */
 
             bool hasChanged = m_Force;
             if (!hasChanged && !m_IsBlocked)
@@ -158,16 +128,14 @@ namespace UnityEditor.Rendering.MaterialVariants
             if (m_Variants == null)
                 return;
 
+            /*
             IEnumerable<MaterialPropertyModification> changes = new MaterialPropertyModification[0];
             foreach (var materialProperty in m_MaterialProperties)
                 changes = changes.Concat(MaterialPropertyModification.CreateMaterialPropertyModifications(materialProperty));
 
-            MaterialVariant.RecordObjectsUndo(m_Variants, m_MaterialProperties);
             foreach (var variant in m_Variants)
-            {
                 variant?.TrimPreviousOverridesAndAdd(changes);
-                MaterialVariant.UpdateHierarchy(variant.GUID, m_MaterialProperties);
-            }
+            */
         }
 
         public DelayedOverrideRegisterer ProduceDelayedRegisterer()
@@ -288,7 +256,7 @@ namespace UnityEditor.Rendering.MaterialVariants
             if (m_Variants == null)
                 return;
 
-            m_IsBlocked = m_Variants.Any(o => o.IsPropertyBlockedInAncestors(k_SerializedPropertyName));
+            //m_IsBlocked = m_Variants.Any(o => o.IsPropertyBlockedInAncestors(k_SerializedPropertyName));
 
             if (m_IsBlocked)
                 EditorGUI.BeginDisabledGroup(true);
@@ -304,6 +272,7 @@ namespace UnityEditor.Rendering.MaterialVariants
             if (m_IsBlocked)
                 EditorGUI.EndDisabledGroup();
 
+            /*
             {
                 bool isOverride = !m_IsBlocked && m_Variants.Any(o => o.IsOverriddenPropertyForNonMaterialProperty(k_SerializedPropertyName));
                 bool isLocked = m_Variants.Any(o => o.IsPropertyBlockedInCurrent(k_SerializedPropertyName));
@@ -320,6 +289,7 @@ namespace UnityEditor.Rendering.MaterialVariants
                     () => Array.ForEach(matVariants, variant => variant.ResetOverrideForNonMaterialProperty(k_SerializedPropertyName)),
                     () => Array.ForEach(matVariants, variant => variant.TogglePropertyBlocked(k_SerializedPropertyName)));
             }
+            */
 
             bool hasChanged = !m_IsBlocked && EditorGUI.EndChangeCheck();
 
@@ -331,9 +301,9 @@ namespace UnityEditor.Rendering.MaterialVariants
 
         void ApplyChangesToMaterialVariants()
         {
-            System.Collections.Generic.IEnumerable<MaterialPropertyModification> changes = MaterialPropertyModification.CreateMaterialPropertyModificationsForNonMaterialProperty(k_SerializedPropertyName, m_ValueGetter());
-            foreach (var variant in m_Variants)
-                variant?.TrimPreviousOverridesAndAdd(changes);
+            //IEnumerable<MaterialPropertyModification> changes = MaterialPropertyModification.CreateMaterialPropertyModificationsForNonMaterialProperty(k_SerializedPropertyName, m_ValueGetter());
+            //foreach (var variant in m_Variants)
+            //    variant?.TrimPreviousOverridesAndAdd(changes);
         }
 
         public DelayedOverrideRegisterer ProduceDelayedRegisterer()
@@ -396,9 +366,9 @@ namespace UnityEditor.Rendering.MaterialVariants
             if (m_Variants == null)
                 return;
 
-            IEnumerable<MaterialPropertyModification> changes = MaterialPropertyModification.CreateMaterialPropertyModificationsForNonMaterialProperty(m_PropertyName, m_Value);
-            foreach (var variant in m_Variants)
-                variant?.TrimPreviousOverridesAndAdd(changes);
+            //IEnumerable<MaterialPropertyModification> changes = MaterialPropertyModification.CreateMaterialPropertyModificationsForNonMaterialProperty(m_PropertyName, m_Value);
+            //foreach (var variant in m_Variants)
+            //    variant?.TrimPreviousOverridesAndAdd(changes);
         }
     }
 }
