@@ -1,11 +1,12 @@
 using System;
 using UnityEditor.ShaderGraph;
+using UnityEngine.Rendering;
 
 namespace UnityEditor.Rendering.Universal.ShaderGraph
 {
     static class CreateUnlitShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/URP/Unlit Shader Graph", false, 84)]
+        [MenuItem("Assets/Create/Shader Graph/URP/Unlit Shader Graph", priority = CoreUtils.Priorities.k_AssetsCreateShaderMenuPriority + 1)]
         public static void CreateUnlitGraph()
         {
             var target = (UniversalTarget)Activator.CreateInstance(typeof(UniversalTarget));

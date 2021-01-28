@@ -1,11 +1,12 @@
 using System;
 using UnityEditor.ShaderGraph;
+using UnityEngine.Rendering;
 
 namespace UnityEditor.Rendering.HighDefinition.ShaderGraph
 {
     static class CreateUnlitShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/HDRP/Unlit Shader Graph", false, 86)]
+        [MenuItem("Assets/Create/Shader Graph/HDRP/Unlit Shader Graph", priority = CoreUtils.Priorities.k_AssetsCreateShaderMenuPriority + 5)]
         public static void CreateHDUnlitGraph()
         {
             var target = (HDTarget)Activator.CreateInstance(typeof(HDTarget));

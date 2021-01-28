@@ -1,11 +1,13 @@
 #if VFX_GRAPH_10_0_0_OR_NEWER
 using System;
 using UnityEditor.ShaderGraph;
+using UnityEngine.Rendering;
+
 namespace UnityEditor.ShaderGraph
 {
     static class CreateVFXShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/VFX Shader Graph", false, 2083)]
+        [MenuItem("Assets/Create/Shader Graph/VFX Shader Graph", priority = CoreUtils.Sections.k_Section2 + CoreUtils.Priorities.k_AssetsCreateShaderMenuPriority)]
         public static void CreateVFXGraph()
         {
             var target = (VFXTarget)Activator.CreateInstance(typeof(VFXTarget));

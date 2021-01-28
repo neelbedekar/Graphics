@@ -1,11 +1,12 @@
 using System;
 using UnityEditor.ShaderGraph;
+using UnityEngine.Rendering;
 
 namespace UnityEditor.Rendering.Universal.ShaderGraph
 {
     static class CreateLitShaderGraph
     {
-        [MenuItem("Assets/Create/Shader Graph/URP/Lit Shader Graph", false, 83)]
+        [MenuItem("Assets/Create/Shader Graph/URP/Lit Shader Graph", priority = CoreUtils.Priorities.k_AssetsCreateShaderMenuPriority)]
         public static void CreateLitGraph()
         {
             var target = (UniversalTarget)Activator.CreateInstance(typeof(UniversalTarget));
