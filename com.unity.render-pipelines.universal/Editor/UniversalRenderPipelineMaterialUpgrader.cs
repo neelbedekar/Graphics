@@ -13,7 +13,7 @@ namespace UnityEditor.Rendering.Universal
         {
         }
 
-        [MenuItem("Edit/Render Pipeline/Universal Render Pipeline/Upgrade Project Materials to UniversalRP Materials", priority = CoreUtils.editMenuPriority2)]
+        [MenuItem("Edit/Rendering/Materials/Convert All Built-in Materials to UniversalRP", priority = CoreUtils.Sections.k_Section1 + CoreUtils.Priorities.k_EditMenuPriority)]
         private static void UpgradeProjectMaterials()
         {
             List<MaterialUpgrader> upgraders = new List<MaterialUpgrader>();
@@ -25,7 +25,7 @@ namespace UnityEditor.Rendering.Universal
             MaterialUpgrader.UpgradeProjectFolder(upgraders, shaderNamesToIgnore, "Upgrade to UniversalRP Materials", MaterialUpgrader.UpgradeFlags.LogMessageWhenNoUpgraderFound);
         }
 
-        [MenuItem("Edit/Render Pipeline/Universal Render Pipeline/Upgrade Selected Materials to UniversalRP Materials", priority = CoreUtils.editMenuPriority2)]
+        [MenuItem("Edit/Rendering/Materials/Convert Selected Built-in Materials to UniversalRP", priority = CoreUtils.Sections.k_Section1 + CoreUtils.Priorities.k_EditMenuPriority + 1)]
         private static void UpgradeSelectedMaterials()
         {
             List<MaterialUpgrader> upgraders = new List<MaterialUpgrader>();

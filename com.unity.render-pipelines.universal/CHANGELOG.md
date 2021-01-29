@@ -22,6 +22,14 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Normalized the view direction in Shader Graph to be consistent across Scriptable Render Pieplines.
 - Fixed material upgrader to run in batch mode [case 1305402]
 
+### Moved
+- Moved Edit/Render Pipeline/Universal Render Pipeline/Upgrade Project Materials to 2D Renderer Materials to Edit/Rendering/Materials/Convert All Built-in Materials to UniversalRP 2D Renderer
+- Moved Edit/Render Pipeline/Universal Render Pipeline/Upgrade Scene Materials to 2D Renderer Materials to Edit/Rendering/Materials/Convert All Built-in Scene Materials to UniversalRP 2D Renderer
+- Moved Edit/Render Pipeline/Universal Render Pipeline/Upgrade Project Parametric Lights to Freeform to Edit/Rendering/Lights/Convert Project Parametric Lights to Freeform
+- Moved Edit/Render Pipeline/Universal Render Pipeline/Upgrade Scene Parametric Lights to Freeform to Edit/Rendering/Lights/Convert Scene Parametric Lights to Freeform
+- Moved Edit/Render Pipeline/Universal Render Pipeline/Upgrade Project Materials to UniversalRP Materials to Edit/Rendering/Materials/Convert All Built-in Materials to UniversalRP
+- Moved Edit/Render Pipeline/Universal Render Pipeline/Upgrade Selected Materials to UniversalRP Materials to Edit/Rendering/Materials/Convert Selected Built-in Materials to UniversalRP
+
 ## [11.0.0] - 2020-10-21
 ### Added
 - Added real-time Point Light Shadows.
