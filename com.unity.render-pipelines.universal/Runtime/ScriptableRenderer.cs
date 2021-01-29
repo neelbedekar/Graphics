@@ -538,6 +538,8 @@ namespace UnityEngine.Rendering.Universal
                 context.ExecuteCommandBuffer(cmd);
                 cmd.Clear();
 
+                if (cameraData.xr.enabled)
+                    cameraData.xr.canMarkLateLatch = true;
                 BeginXRRendering(cmd, context, ref renderingData.cameraData);
 
                 // In the opaque and transparent blocks the main rendering executes.
@@ -555,6 +557,8 @@ namespace UnityEngine.Rendering.Universal
                     using var profScope = new ProfilingScope(cmd, Profiling.RenderBlock.mainRenderingTransparent);
                     ExecuteBlock(RenderPassBlock.MainRenderingTransparent, in renderBlocks, context, ref renderingData);
                 }
+                if (cameraData.xr.enabled)
+                    cameraData.xr.canMarkLateLatch = false;
 
                 // Draw Gizmos...
                 DrawGizmos(context, camera, GizmoSubset.PreImageEffects);
@@ -724,6 +728,17 @@ namespace UnityEngine.Rendering.Universal
             CommandBufferPool.Release(cmd);
 
             renderPass.Execute(context, ref renderingData);
+
+#if ENABLE_VR && ENABLE_XR_MODULE
+            if (cameraData.xr.canMarkLateLatch && cameraData.xr.hasMarkedLateLatch)
+            {
+                cmd.UnmarkGlobalShaderPropertyIDLateLatch(CameraLateLatchMatrixType.View);
+                cmd.UnmarkGlobalShaderPropertyIDLateLatch(CameraLateLatchMatrixType.InverseView);
+                cmd.UnmarkGlobalShaderPropertyIDLateLatch(CameraLateLatchMatrixType.ViewProjection);
+                cmd.UnmarkGlobalShaderPropertyIDLateLatch(CameraLateLatchMatrixType.InverseViewProjection);
+                cameraData.xr.hasMarkedLateLatch = false;
+            }
+#endif
         }
 
         void SetRenderPassAttachments(CommandBuffer cmd, ScriptableRenderPass renderPass, ref CameraData cameraData)
