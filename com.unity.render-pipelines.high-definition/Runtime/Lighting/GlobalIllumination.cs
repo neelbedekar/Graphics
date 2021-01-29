@@ -49,7 +49,7 @@ namespace UnityEngine.Rendering.HighDefinition
         }
         [SerializeField]
         [Tooltip("Controls the number of steps used for ray marching.")]
-        private ClampedIntParameter m_RaySteps = new ClampedIntParameter(24, 16, 128);
+        private ClampedIntParameter m_RaySteps = new ClampedIntParameter(24, 16, 256);
 
         /// <summary>
         /// Defines if the effect should be evaluated at full resolution.

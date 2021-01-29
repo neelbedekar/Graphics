@@ -25,6 +25,10 @@
 // Epslon value used for the computation
 #define GI_TRACE_EPS 0.00024414
 
+// Defines the mip offset for the color buffer
+#define SSGI_MIP_OFFSET 2
+
+// Flag to enable/disable perceptual space denoising
 #define PERCEPTUAL_SPACE
 
 // Input depth pyramid texture
@@ -273,10 +277,10 @@ RW_TEXTURE2D_X(float4, _IndirectDiffuseTexture1RW);
 // The maximal difference in depth that is considered acceptable to read from the color pyramid
 #define DEPTH_DIFFERENCE_THRESHOLD 0.1
 
-void RGBToYCoCgUtil(float3 inColor, float3 inDirection, out float4 outYSH, out float2 outCoCg)
+void RGBToHSVUtil(float3 inColor, float3 inDirection, out float4 outV_SH, out float2 outHS)
 {
     // Convert the color to ycocg space
-    float3 yCoCg = RGBToYCoCg(inColor);
+    float3 hsv = RgbToHsv(inColor);
 
     // Compute the coeffs required for the projection
     float Y00     = 0.282095;
@@ -285,12 +289,12 @@ void RGBToYCoCgUtil(float3 inColor, float3 inDirection, out float4 outYSH, out f
     float Y1_1    = 0.488603 * inDirection.y;
 
     // Output the values
-    outYSH.x = yCoCg.x * Y00;
-    outYSH.y = yCoCg.x * Y11;
-    outYSH.z = yCoCg.x * Y10;
-    outYSH.w = yCoCg.x * Y1_1;
-    outCoCg.x = yCoCg.y;
-    outCoCg.y = yCoCg.z;
+    outV_SH.x = hsv.z * Y00;
+    outV_SH.y = hsv.z * Y11;
+    outV_SH.z = hsv.z * Y10;
+    outV_SH.w = hsv.z * Y1_1;
+    outHS.x = hsv.x;
+    outHS.y = hsv.y;
 }
 
 [numthreads(INDIRECT_DIFFUSE_TILE_SIZE, INDIRECT_DIFFUSE_TILE_SIZE, 1)]
@@ -344,8 +348,10 @@ void REPROJECT_GLOBAL_ILLUMINATION(uint3 dispatchThreadId : SV_DispatchThreadID,
     // Based on if the intersection was valid (or not, pick a source for the lighting)
     float3 color = 0.0;
     if (!invalid)
+    {
         // The intersection was considered valid, we can read from the color pyramid
-        color = SAMPLE_TEXTURE2D_X_LOD(_ColorPyramidTexture, s_linear_clamp_sampler, prevFrameUV, 0).rgb;
+        color = SAMPLE_TEXTURE2D_X_LOD(_ColorPyramidTexture, s_linear_clamp_sampler, prevFrameUV, SSGI_MIP_OFFSET).rgb * PI;
+    }
 
     // TODO: Remove me when you can find where the nans come from
     if (AnyIsNaN(color))
@@ -362,40 +368,44 @@ void REPROJECT_GLOBAL_ILLUMINATION(uint3 dispatchThreadId : SV_DispatchThreadID,
 
 #ifdef PERCEPTUAL_SPACE
     // We tone map the signal. Due to the very small budget for denoising, we need to compress the range of the signal
-    color = color / (1.0 + color);
+    color *= rcp(1.0 + color);
+#else
+    color = clamp(color, 0.0, 5.0f);
 #endif
 
     // Re-compute the direction that was used to do the generation
     float3 sampleDir = SampleHemisphereCosine(newSample.x, newSample.y, normalData.normalWS);
 
     // Convert the color to our target format
-    float4 outYSH;
-    float2 outCoCg;
-    RGBToYCoCgUtil(color, sampleDir, outYSH, outCoCg);
+    float4 outV_SH;
+    float2 outHS;
+    RGBToHSVUtil(color, sampleDir, outV_SH, outHS);
 
     // We are simply interested to know if the intersected pixel was moving, so we multiply it by a big number
     // TODO: make this process not binary
     // Write the output to the target pixel
-    _IndirectDiffuseTexture0RW[COORD_TEXTURE2D_X(dispatchThreadId.xy)] = float4(outYSH);
-    _IndirectDiffuseTexture1RW[COORD_TEXTURE2D_X(dispatchThreadId.xy)] = float4(outCoCg, invalid ? 0.0 : 1.0, length(motionVectorNDC * 10000.0f));
+    _IndirectDiffuseTexture0RW[COORD_TEXTURE2D_X(dispatchThreadId.xy)] = float4(outV_SH);
+    _IndirectDiffuseTexture1RW[COORD_TEXTURE2D_X(dispatchThreadId.xy)] = float4(outHS, invalid ? 0.0 : 1.0, length(motionVectorNDC * 10000.0f));
 }
 
-void ConvertYCoCgToRGBUtil(float4 inYSH, float2 inCoCg, float3 inNormal, out float3 outColor)
+void ConvertHSVToRGBUtil(float4 inV_SH, float2 inHS, float3 inNormal, out float3 outColor)
 {
     // Compute the coeffs required for the projection
-    float Y00     = 0.282095;
-    float Y11     = 0.488603 * inNormal.x;
-    float Y10     = 0.488603 * inNormal.z;
-    float Y1_1    = 0.488603 * inNormal.y;
+    float V00     = 0.282095;
+    float V11     = 0.488603 * inNormal.x;
+    float V10     = 0.488603 * inNormal.z;
+    float V1_1    = 0.488603 * inNormal.y;
 
     // Compute the Y value
-    float y = 3.141593 * Y00 * inYSH.x
-                + 2.094395 * Y1_1 * inYSH.w
-                + 2.094395 * Y10 * inYSH.z
-                + 2.094395 * Y11 * inYSH.y;
+    float v = 3.141593 * V00 * inV_SH.x
+                + 2.094395 * V11 * inV_SH.w
+                + 2.094395 * V10 * inV_SH.z
+                + 2.094395 * V1_1 * inV_SH.y;
+
+    v = max(v, 0);
 
     // Compute the output color
-    outColor = y != 0.0 ? YCoCgToRGB(float3(y, inCoCg.xy)) : 0.0;
+    outColor = v > 0.0 ? HsvToRgb(float3(inHS.xy, v)) : 0.0;
     outColor = max(outColor, 0.0);
 }
 
@@ -429,25 +439,28 @@ void CONVERT_YCOCG_TO_RGB(uint3 dispatchThreadId : SV_DispatchThreadID, uint2 gr
 
     // Convert the signal back to a color
     float3 color;
-    float4 ySH = _IndirectDiffuseTexture0RW[COORD_TEXTURE2D_X(dispatchThreadId.xy)];
-    float3 cocgB = LOAD_TEXTURE2D_X(_IndirectDiffuseTexture1, dispatchThreadId.xy).xyz;
-    ConvertYCoCgToRGBUtil(ySH, cocgB.xy, normalData.normalWS, color);
+    float4 vSH = _IndirectDiffuseTexture0RW[COORD_TEXTURE2D_X(dispatchThreadId.xy)];
+    float3 hsB = LOAD_TEXTURE2D_X(_IndirectDiffuseTexture1, dispatchThreadId.xy).xyz;
+    ConvertHSVToRGBUtil(vSH, hsB.xy, normalData.normalWS, color);
+
+    // Grab the validity mask
+    float validityMask = hsB.z;
 
 #ifdef PERCEPTUAL_SPACE
     // We invert the tonemap
-    color = color / (1.0 - color);
+    color *= rcp(1.0 - color);
 
-    // The mulitplication is wrong, but with all the approximations that we need to compensate a bit
+     // The mulitplication is wrong, but with all the approximations that we need to compensate a bit
     // the fact that the signal was significantly attenuated (due to blurring in tonemapped space to reduce the blobbyness).
     // This has been experimentally tested. However, it needs more testing and potetially reverted if found more harmful than useful
-    color *= (lerp(5.0, 1.0, cocgB.z));
+    color *= lerp(5.0, 1.0, validityMask);
 #endif
 
     // Does this pixel recieve SSGI?
     uint stencilValue = GetStencilValue(LOAD_TEXTURE2D_X(_StencilTexture, currentCoord));
     if ((stencilValue & _SsrStencilBit) == 0)
-        cocgB.z = 0.0;
+        validityMask = 0.0;
 
     // Output the color as well as the blend factor
-    _IndirectDiffuseTexture0RW[COORD_TEXTURE2D_X(dispatchThreadId.xy)] = float4(color, cocgB.z);
+    _IndirectDiffuseTexture0RW[COORD_TEXTURE2D_X(dispatchThreadId.xy)] = float4(color, validityMask);
 }

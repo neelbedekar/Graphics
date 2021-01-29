@@ -13,7 +13,6 @@ namespace UnityEngine.Rendering.HighDefinition
         int m_TemporalFilterHalfKernel;
         int m_TemporalFilterKernel;
         int m_CopyHistory;
-        static Color s_CoCgAccClearColor = new Color(0.501960784f, 0.501960784f, 0.0f, 0.0f);
 
         public SSGIDenoiser()
         {
@@ -177,7 +176,7 @@ namespace UnityEngine.Rendering.HighDefinition
             {
                 // clear it to black if this is the first pass to avoid nans
                 CoreUtils.SetRenderTarget(cmd, resources.indirectDiffuseHistory0, ClearFlag.Color, Color.black);
-                CoreUtils.SetRenderTarget(cmd, resources.indirectDiffuseHistory1, ClearFlag.Color, s_CoCgAccClearColor);
+                CoreUtils.SetRenderTarget(cmd, resources.indirectDiffuseHistory1, ClearFlag.Color, Color.black);
             }
 
             // Bind the input buffers
