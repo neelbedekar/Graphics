@@ -22,7 +22,7 @@ namespace UnityEngine.Rendering.Universal
             }
         }
 
-        [MenuItem("Assets/Create/Rendering/Universal Render Pipeline/XR System Data", priority = CoreUtils.assetCreateMenuPriority3)]
+        [MenuItem("Assets/Create/Rendering/URP XR System Data", priority = CoreUtils.Sections.k_Section5 + CoreUtils.Priorities.k_AssetsCreateRenderingMenuPriority)]
         static void CreateXRSystemData()
         {
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, CreateInstance<CreateXRSystemDataAsset>(), "CustomXRSystemData.asset", null, null);

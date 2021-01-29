@@ -40,6 +40,38 @@ namespace UnityEngine.Rendering
             new Vector3(0.0f, 1.0f, 0.0f),
         };
 
+        /// <summary>
+        /// Class to store the menu sections
+        /// </summary>
+        public static class Sections
+        {
+            /// <summary>Menu section 1</summary>
+            public const int k_Section1 = 10000;
+            /// <summary>Menu section 2</summary>
+            public const int k_Section2 = 20000;
+            /// <summary>Menu section 3</summary>
+            public const int k_Section3 = 30000;
+            /// <summary>Menu section 4</summary>
+            public const int k_Section4 = 40000;
+            /// <summary>Menu section 5</summary>
+            public const int k_Section5 = 50000;
+            /// <summary>Menu section 6</summary>
+            public const int k_Section6 = 60000;
+            /// <summary>Menu section 7</summary>
+            public const int k_Section7 = 70000;
+            /// <summary>Menu section 8</summary>
+            public const int k_Section8 = 80000;
+        }
+
+        /// <summary>
+        /// Class to store the "Rendering" menu priority on each top level menu
+        /// </summary>
+        public static class Priorities
+        {
+            /// <summary>Assets > Create > Shader priority</summary>
+            public const int k_AssetsCreateRenderingMenuPriority = 308;
+        }
+
         /// <summary>Edit Menu priority 1</summary>
         public const int editMenuPriority1 = 320;
         /// <summary>Edit Menu priority 2</summary>

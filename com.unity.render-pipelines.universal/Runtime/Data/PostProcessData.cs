@@ -22,7 +22,7 @@ namespace UnityEngine.Rendering.Universal
             }
         }
 
-        [MenuItem("Assets/Create/Rendering/Universal Render Pipeline/Post-process Data", priority = CoreUtils.assetCreateMenuPriority3)]
+        [MenuItem("Assets/Create/Rendering/URP Post-process Data", priority = CoreUtils.Sections.k_Section5 + CoreUtils.Priorities.k_AssetsCreateRenderingMenuPriority)]
         static void CreatePostProcessData()
         {
             ProjectWindowUtil.StartNameEditingIfProjectWindowExists(0, CreateInstance<CreatePostProcessDataAsset>(), "CustomPostProcessData.asset", null, null);
