@@ -43,7 +43,7 @@ half4 _MainLightColor;
 half4 _MainLightOcclusionProbes;
 
 // xyz are currently unused
-// w: directLightStrength
+// w directLightStrength
 half4 _AmbientOcclusionParam;
 
 half4 _AdditionalLightsCount;
@@ -84,7 +84,7 @@ CBUFFER_END
 // UnityInput.hlsl must be included before UnityInstancing.hlsl, so constant buffer
 // declarations don't fail because of instancing macros.
 // UniversalDOTSInstancing.hlsl must be included after UnityInstancing.hlsl
-#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityInput.hlsl"
+#include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityInput2.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/UnityInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UniversalDOTSInstancing.hlsl"
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/SpaceTransforms.hlsl"

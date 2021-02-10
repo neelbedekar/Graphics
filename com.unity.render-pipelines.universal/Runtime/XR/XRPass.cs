@@ -78,9 +78,17 @@ namespace UnityEngine.Rendering.Universal
         // Ability to specify where to render the pass
         internal RenderTargetIdentifier  renderTarget     { get; private set; }
         internal RenderTextureDescriptor renderTargetDesc { get; private set; }
-        static   RenderTargetIdentifier  invalidRT = -1;
+
+        // Same but for motion vectors
+        internal RenderTargetIdentifier motionVectorRenderTarget { get; private set; }
+        internal RenderTextureDescriptor motionVectorRenderTargetDesc { get; private set; }
+
+        static RenderTargetIdentifier  invalidRT = -1;
         internal bool                    renderTargetValid { get => renderTarget != invalidRT; }
         internal bool                    renderTargetIsRenderTexture { get; private set; }
+        internal bool motionVectorRenderTargetValid { get => motionVectorRenderTarget != invalidRT; }
+        internal bool motionVectorRenderTargetIsRenderTexture { get; private set; }
+
         internal bool canMarkLateLatch { get; set; }
         internal bool hasMarkedLateLatch { get; set; }
 
@@ -210,14 +218,27 @@ namespace UnityEngine.Rendering.Universal
             //passInfo.renderTargetDesc = xrDesc;
             passInfo.renderTargetDesc = rtDesc;
 
+            passInfo.motionVectorRenderTarget = new RenderTargetIdentifier(xrRenderPass.motionVectorRenderTarget, 0, CubemapFace.Unknown, -1);
+
+            RenderTextureDescriptor xrMotionVectorDesc = xrRenderPass.renderTargetDesc;
+            RenderTextureDescriptor rtMotionVectorDesc = new RenderTextureDescriptor(xrMotionVectorDesc.width, xrMotionVectorDesc.height, xrMotionVectorDesc.colorFormat, xrMotionVectorDesc.depthBufferBits, xrMotionVectorDesc.mipCount);
+            rtMotionVectorDesc.dimension = xrRenderPass.renderTargetDesc.dimension;
+            rtMotionVectorDesc.volumeDepth = xrRenderPass.renderTargetDesc.volumeDepth;
+            rtMotionVectorDesc.vrUsage = xrRenderPass.renderTargetDesc.vrUsage;
+            rtMotionVectorDesc.sRGB = xrRenderPass.renderTargetDesc.sRGB;
+            passInfo.motionVectorRenderTargetDesc = rtMotionVectorDesc;
+
             // Eye textures are back buffer type internally (See c++ core XRTextureManager)
             passInfo.renderTargetIsRenderTexture = false;
+            passInfo.motionVectorRenderTargetIsRenderTexture = false;
             passInfo.occlusionMeshMaterial = occlusionMeshMaterial;
             passInfo.xrSdkEnabled = true;
             passInfo.copyDepth = xrRenderPass.shouldFillOutDepth;
             passInfo.customMirrorView = null;
 
             Debug.Assert(passInfo.renderTargetValid, "Invalid render target from XRDisplaySubsystem!");
+            if (xrRenderPass.hasMotionVectorPass)
+                Debug.Assert(passInfo.motionVectorRenderTargetValid, "Invalid motion vector render target from XRDisplaySubsystem!");
 
             return passInfo;
         }
@@ -467,7 +488,6 @@ namespace UnityEngine.Rendering.Universal
                     cmd.MarkGlobalShaderPropertyIDLateLatch(UNITY_STEREO_MATRIX_IV, CameraLateLatchMatrixType.InverseView);
                     cmd.MarkGlobalShaderPropertyIDLateLatchWithProjection(UNITY_STEREO_MATRIX_VP, CameraLateLatchMatrixType.ViewProjection, stereoProjectionMatrix);
                     cmd.MarkGlobalShaderPropertyIDLateLatch(UNITY_STEREO_MATRIX_IVP, CameraLateLatchMatrixType.InverseViewProjection);
-                    cameraData.xr.hasMarkedLateLatch = true;
                 }
             }
         }

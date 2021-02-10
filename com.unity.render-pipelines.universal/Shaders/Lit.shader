@@ -88,8 +88,8 @@ Shader "Universal Render Pipeline/Lit"
             Tags{"LightMode" = "UniversalForward"}
 
             Blend[_SrcBlend][_DstBlend]
-            ZWrite[_ZWrite]
-            Cull[_Cull]
+            ZWrite On
+            Cull Back
 
             HLSLPROGRAM
             #pragma exclude_renderers gles gles3 glcore
@@ -367,8 +367,8 @@ Shader "Universal Render Pipeline/Lit"
             Tags{"LightMode" = "UniversalForward"}
 
             Blend[_SrcBlend][_DstBlend]
-            ZWrite[_ZWrite]
-            Cull[_Cull]
+            ZWrite On
+            Cull Back
 
             HLSLPROGRAM
             #pragma only_renderers gles gles3 glcore
@@ -565,6 +565,6 @@ Shader "Universal Render Pipeline/Lit"
         }
     }
 
-    FallBack "Hidden/Universal Render Pipeline/FallbackError"
+    FallBack "Hidden/Universal Render Pipeline/MotionVec"
     CustomEditor "UnityEditor.Rendering.Universal.ShaderGUI.LitShader"
 }

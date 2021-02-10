@@ -13,6 +13,7 @@ namespace UnityEngine.Rendering.Universal
     {
         static List<ShaderTagId> m_LegacyShaderPassNames = new List<ShaderTagId>()
         {
+
             new ShaderTagId("Always"),
             new ShaderTagId("ForwardBase"),
             new ShaderTagId("PrepassBase"),
@@ -89,7 +90,7 @@ namespace UnityEngine.Rendering.Universal
                     // Proper fix is to add a fence on asset import.
                     try
                     {
-                        s_ErrorMaterial = new Material(Shader.Find("Hidden/Universal Render Pipeline/FallbackError"));
+                        s_ErrorMaterial = new Material(Shader.Find("Hidden/Universal Render Pipeline/MotionVec"));
                     }
                     catch { }
                 }
@@ -223,7 +224,7 @@ namespace UnityEngine.Rendering.Universal
         // This is used to render materials that contain built-in shader passes not compatible with URP.
         // It will render those legacy passes with error/pink shader.
         [Conditional("DEVELOPMENT_BUILD"), Conditional("UNITY_EDITOR")]
-        internal static void RenderObjectsWithError(ScriptableRenderContext context, ref CullingResults cullResults, Camera camera, FilteringSettings filterSettings, SortingCriteria sortFlags)
+        internal static void RenderObjectsWithError(ScriptableRenderContext context, ref CullingResults cullResults, Camera camera, FilteringSettings filterSettings, SortingCriteria sortFlags, bool hasList = false, List<ShaderTagId> lst = null, PerObjectData objectData = PerObjectData.None)
         {
             // TODO: When importing project, AssetPreviewUpdater::CreatePreviewForAsset will be called multiple times.
             // This might be in a point that some resources required for the pipeline are not finished importing yet.
@@ -232,14 +233,29 @@ namespace UnityEngine.Rendering.Universal
                 return;
 
             SortingSettings sortingSettings = new SortingSettings(camera) { criteria = sortFlags };
-            DrawingSettings errorSettings = new DrawingSettings(m_LegacyShaderPassNames[0], sortingSettings)
+            DrawingSettings errorSettings;
+            if (hasList)
             {
-                perObjectData = PerObjectData.None,
-                overrideMaterial = errorMaterial,
-                overrideMaterialPassIndex = 0
-            };
-            for (int i = 1; i < m_LegacyShaderPassNames.Count; ++i)
-                errorSettings.SetShaderPassName(i, m_LegacyShaderPassNames[i]);
+                errorSettings = new DrawingSettings(lst[0], sortingSettings)
+                {
+                    perObjectData = objectData,
+                    overrideMaterial = errorMaterial,
+                    overrideMaterialPassIndex = 0
+                };
+                for (int i = 1; i < lst.Count; ++i)
+                    errorSettings.SetShaderPassName(i, lst[i]);
+            }
+            else
+            {
+                errorSettings = new DrawingSettings(m_LegacyShaderPassNames[0], sortingSettings)
+                {
+                    perObjectData = objectData,
+                    overrideMaterial = errorMaterial,
+                    overrideMaterialPassIndex = 0
+                };
+                for (int i = 1; i < m_LegacyShaderPassNames.Count; ++i)
+                    errorSettings.SetShaderPassName(i, m_LegacyShaderPassNames[i]);
+            }
 
             context.DrawRenderers(cullResults, ref errorSettings, ref filterSettings);
         }

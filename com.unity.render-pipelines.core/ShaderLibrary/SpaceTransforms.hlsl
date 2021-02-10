@@ -9,6 +9,11 @@ float4x4 GetObjectToWorldMatrix()
     return UNITY_MATRIX_M;
 }
 
+float4x4 GetPreviousObjectToWorldMatrix()
+{
+    return UNITY_MATRIX_PREV_M;
+}
+
 float4x4 GetWorldToObjectMatrix()
 {
     return UNITY_MATRIX_I_M;
@@ -64,6 +69,11 @@ float3 TransformObjectToWorld(float3 positionOS)
     #else
     return mul(GetObjectToWorldMatrix(), float4(positionOS, 1.0)).xyz;
     #endif
+}
+
+float3 TransformPreviousObjectToWorld(float3 positionOS)
+{
+    return mul(GetPreviousObjectToWorldMatrix(), float4(positionOS, 1.0)).xyz;
 }
 
 float3 TransformWorldToObject(float3 positionWS)

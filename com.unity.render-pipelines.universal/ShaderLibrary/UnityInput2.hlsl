@@ -106,30 +106,6 @@ float4x4 unity_WorldToObject;
 float4 unity_LODFade; // x is the fade value ranging within [0,1]. y is x quantized into 16 levels
 real4 unity_WorldTransformParams; // w is usually 1.0, or -1.0 for odd-negative scale transforms
 
-// Light Indices block feature
-// These are set internally by the engine upon request by RendererConfiguration.
-real4 unity_LightData;
-real4 unity_LightIndices[2];
-
-float4 unity_ProbesOcclusion;
-
-// Reflection Probe 0 block feature
-// HDR environment map decode instructions
-real4 unity_SpecCube0_HDR;
-
-// Lightmap block feature
-float4 unity_LightmapST;
-float4 unity_LightmapIndex;
-float4 unity_DynamicLightmapST;
-
-// SH block feature
-real4 unity_SHAr;
-real4 unity_SHAg;
-real4 unity_SHAb;
-real4 unity_SHBr;
-real4 unity_SHBg;
-real4 unity_SHBb;
-real4 unity_SHC;
 float4x4 unity_MatrixPreviousM;
 float4x4 unity_MatrixPreviousMI;
 //X : Use last frame positions (right now skinned meshes are the only objects that use this

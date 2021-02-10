@@ -730,13 +730,12 @@ namespace UnityEngine.Rendering.Universal
             renderPass.Execute(context, ref renderingData);
 
 #if ENABLE_VR && ENABLE_XR_MODULE
-            if (cameraData.xr.canMarkLateLatch && cameraData.xr.hasMarkedLateLatch)
+            if (cameraData.xr.canMarkLateLatch)
             {
                 cmd.UnmarkGlobalShaderPropertyIDLateLatch(CameraLateLatchMatrixType.View);
                 cmd.UnmarkGlobalShaderPropertyIDLateLatch(CameraLateLatchMatrixType.InverseView);
                 cmd.UnmarkGlobalShaderPropertyIDLateLatch(CameraLateLatchMatrixType.ViewProjection);
                 cmd.UnmarkGlobalShaderPropertyIDLateLatch(CameraLateLatchMatrixType.InverseViewProjection);
-                cameraData.xr.hasMarkedLateLatch = false;
             }
 #endif
         }
@@ -921,7 +920,8 @@ namespace UnityEngine.Rendering.Universal
                     {
                         // SetRenderTarget might alter the internal device state(winding order).
                         // Non-stereo buffer is already updated internally when switching render target. We update stereo buffers here to keep the consistency.
-                        bool isRenderToBackBufferTarget = (passColorAttachment == cameraData.xr.renderTarget) && !cameraData.xr.renderTargetIsRenderTexture;
+                        bool isRenderToBackBufferTarget = ((passColorAttachment == cameraData.xr.renderTarget) && !cameraData.xr.renderTargetIsRenderTexture) ||
+                            ((passColorAttachment == cameraData.xr.motionVectorRenderTarget) && !cameraData.xr.motionVectorRenderTargetIsRenderTexture);
                         cameraData.xr.UpdateGPUViewAndProjectionMatrices(cmd, ref cameraData, !isRenderToBackBufferTarget);
                     }
 #endif
